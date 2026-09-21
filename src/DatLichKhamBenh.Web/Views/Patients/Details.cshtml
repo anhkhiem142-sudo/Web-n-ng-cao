@@ -1,0 +1,37 @@
+@model DatLichKhamBenh.Web.Models.Patient
+@{
+    ViewData["Title"] = "Chi tiết bệnh nhân";
+}
+
+<h1>@Model.FullName</h1>
+<dl class="row">
+    <dt class="col-sm-2">Ngày sinh</dt>
+    <dd class="col-sm-10">@Model.DateOfBirth.ToString("dd/MM/yyyy")</dd>
+    <dt class="col-sm-2">Giới tính</dt>
+    <dd class="col-sm-10">@Model.Gender</dd>
+    <dt class="col-sm-2">Điện thoại</dt>
+    <dd class="col-sm-10">@Model.Phone</dd>
+    <dt class="col-sm-2">Địa chỉ</dt>
+    <dd class="col-sm-10">@Model.Address</dd>
+</dl>
+
+<h4>Lịch sử khám</h4>
+<table class="table table-sm">
+    <thead>
+        <tr><th>Ngày khám</th><th>Giờ</th><th>Bác sĩ</th><th>Trạng thái</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var a in Model.Appointments.OrderByDescending(a => a.AppointmentDate))
+        {
+            <tr>
+                <td>@a.AppointmentDate.ToString("dd/MM/yyyy")</td>
+                <td>@a.TimeSlot</td>
+                <td>@a.Doctor?.FullName</td>
+                <td>@a.Status</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Sửa</a>
+<a asp-action="Index" class="btn btn-secondary">Quay lại</a>

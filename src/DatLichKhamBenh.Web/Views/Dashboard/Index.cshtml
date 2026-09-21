@@ -1,0 +1,120 @@
+@{
+    ViewData["Title"] = "Thống kê";
+}
+
+<h1 class="mb-1">Thống kê tổng quan</h1>
+<p class="text-muted mb-4">Số liệu cập nhật theo thời gian thực (cache 2 phút)</p>
+
+<div class="row g-3 mb-4" id="kpiRow">
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div class="kpi-icon"><i class="bi bi-people"></i></div>
+            <div>
+                <div class="kpi-value" id="kpiPatients">-</div>
+                <div class="kpi-label">Bệnh nhân</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div class="kpi-icon"><i class="bi bi-person-badge"></i></div>
+            <div>
+                <div class="kpi-value" id="kpiDoctors">-</div>
+                <div class="kpi-label">Bác sĩ</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div class="kpi-icon"><i class="bi bi-hospital"></i></div>
+            <div>
+                <div class="kpi-value" id="kpiRooms">-</div>
+                <div class="kpi-label">Phòng khám</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div class="kpi-icon"><i class="bi bi-calendar2-check"></i></div>
+            <div>
+                <div class="kpi-value" id="kpiToday">-</div>
+                <div class="kpi-label">Lịch khám hôm nay</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="chart-card">
+            <h5 class="mb-3">Lịch khám 14 ngày gần nhất</h5>
+            <canvas id="dailyChart" height="100"></canvas>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="chart-card h-100">
+            <h5 class="mb-3">Theo trạng thái</h5>
+            <canvas id="statusChart" height="100"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4" id="topDoctorsRow">
+    <div class="col-md-8">
+        <div class="chart-card">
+            <h5 class="mb-3">Top bác sĩ nhiều lịch khám nhất</h5>
+            <canvas id="doctorChart" height="90"></canvas>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+        async function loadDashboard() {
+            const response = await fetch('@Url.Action("StatsData", "Dashboard")');
+            if (!response.ok) return;
+            const stats = await response.json();
+
+            document.getElementById('kpiPatients').textContent = stats.totalPatients;
+            document.getElementById('kpiDoctors').textContent = stats.totalDoctors;
+            document.getElementById('kpiRooms').textContent = stats.totalRooms;
+            document.getElementById('kpiToday').textContent = stats.appointmentsToday;
+
+            Chart.defaults.font.family = "'Be Vietnam Pro', 'Inter', sans-serif";
+
+            new Chart(document.getElementById('dailyChart'), {
+                type: 'line',
+                data: {
+                    labels: stats.last14Days.map(d => d.date),
+                    datasets: [{ label: 'Số lịch khám', data: stats.last14Days.map(d => d.count), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.1)', fill: true, tension: 0.35 }]
+                },
+                options: { plugins: { legend: { display: false } } }
+            });
+
+            const statusLabels = Object.keys(stats.byStatus);
+            new Chart(document.getElementById('statusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{ data: statusLabels.map(k => stats.byStatus[k]), backgroundColor: ['#f59e0b', '#0dcaf0', '#16a34a', '#94a3b8'] }]
+                }
+            });
+
+            if (stats.topDoctors && stats.topDoctors.length > 0) {
+                new Chart(document.getElementById('doctorChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: stats.topDoctors.map(d => d.doctorName),
+                        datasets: [{ label: 'Số lịch khám', data: stats.topDoctors.map(d => d.count), backgroundColor: '#0d9488', borderRadius: 6 }]
+                    },
+                    options: { indexAxis: 'y', plugins: { legend: { display: false } } }
+                });
+            } else {
+                document.getElementById('topDoctorsRow').style.display = 'none';
+            }
+        }
+
+        loadDashboard();
+    </script>
+}

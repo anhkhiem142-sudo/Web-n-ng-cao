@@ -1,0 +1,99 @@
+@model DatLichKhamBenh.Web.Models.Appointment
+@{
+    ViewData["Title"] = "Chi tiết lịch khám";
+}
+
+<h1>Chi tiết lịch khám</h1>
+
+@if (TempData["Success"] is not null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] is not null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<dl class="row">
+    <dt class="col-sm-3">Bệnh nhân</dt>
+    <dd class="col-sm-9">@Model.Patient?.FullName</dd>
+    <dt class="col-sm-3">Bác sĩ</dt>
+    <dd class="col-sm-9">@Model.Doctor?.FullName (@Model.Doctor?.Specialty)</dd>
+    <dt class="col-sm-3">Phòng khám</dt>
+    <dd class="col-sm-9">@Model.Room?.Name</dd>
+    <dt class="col-sm-3">Ngày giờ khám</dt>
+    <dd class="col-sm-9">@Model.AppointmentDate.ToString("dd/MM/yyyy") lúc @Model.TimeSlot</dd>
+    <dt class="col-sm-3">Lý do khám</dt>
+    <dd class="col-sm-9">@Model.Reason</dd>
+    <dt class="col-sm-3">Trạng thái</dt>
+    <dd class="col-sm-9">@Model.Status</dd>
+</dl>
+
+<hr />
+<h4>Thông tin bệnh / Chẩn đoán</h4>
+@if (Model.MedicalInfo is not null)
+{
+    <dl class="row">
+        <dt class="col-sm-3">Triệu chứng đã gửi</dt>
+        <dd class="col-sm-9">@Model.MedicalInfo.Symptoms</dd>
+        @if (!string.IsNullOrWhiteSpace(Model.MedicalInfo.Diagnosis))
+        {
+            <dt class="col-sm-3">Chẩn đoán</dt>
+            <dd class="col-sm-9">@Model.MedicalInfo.Diagnosis</dd>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.MedicalInfo.DoctorNotes))
+        {
+            <dt class="col-sm-3">Ghi chú bác sĩ</dt>
+            <dd class="col-sm-9">@Model.MedicalInfo.DoctorNotes</dd>
+        }
+    </dl>
+}
+else
+{
+    <p class="text-muted">Chưa có thông tin bệnh.</p>
+}
+
+@if (User.IsInRole("Patient") && Model.Status != DatLichKhamBenh.Web.Models.AppointmentStatus.Cancelled)
+{
+    <form asp-action="SendMedicalInfo" asp-route-id="@Model.Id" method="post" class="col-md-6 mb-4">
+        <div class="mb-2">
+            <label class="form-label">Gửi thông tin bệnh đến bác sĩ</label>
+            <textarea name="symptoms" class="form-control" rows="3">@Model.MedicalInfo?.Symptoms</textarea>
+        </div>
+        <button type="submit" class="btn btn-outline-primary">Gửi thông tin bệnh</button>
+    </form>
+}
+
+@if (User.IsInRole("Doctor"))
+{
+    <form asp-action="AddDiagnosis" asp-route-id="@Model.Id" method="post" class="col-md-6 mb-4">
+        <div class="mb-2">
+            <label class="form-label">Chẩn đoán</label>
+            <input name="diagnosis" class="form-control" value="@Model.MedicalInfo?.Diagnosis" />
+        </div>
+        <div class="mb-2">
+            <label class="form-label">Ghi chú</label>
+            <textarea name="doctorNotes" class="form-control" rows="2">@Model.MedicalInfo?.DoctorNotes</textarea>
+        </div>
+        <button type="submit" class="btn btn-outline-primary">Lưu chẩn đoán</button>
+    </form>
+}
+
+<div class="d-flex gap-2">
+    @if ((User.IsInRole("Doctor") || User.IsInRole("Admin")) && Model.Status is DatLichKhamBenh.Web.Models.AppointmentStatus.Pending or DatLichKhamBenh.Web.Models.AppointmentStatus.Confirmed)
+    {
+        <form asp-action="UpdateStatus" asp-route-id="@Model.Id" method="post">
+            <input type="hidden" name="status" value="@(Model.Status == DatLichKhamBenh.Web.Models.AppointmentStatus.Pending ? "Confirmed" : "Completed")" />
+            <button type="submit" class="btn btn-success">
+                @(Model.Status == DatLichKhamBenh.Web.Models.AppointmentStatus.Pending ? "Xác nhận lịch khám" : "Đánh dấu đã khám xong")
+            </button>
+        </form>
+    }
+    @if (Model.Status is DatLichKhamBenh.Web.Models.AppointmentStatus.Pending or DatLichKhamBenh.Web.Models.AppointmentStatus.Confirmed)
+    {
+        <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Bạn có chắc muốn hủy lịch khám này?');">
+            <button type="submit" class="btn btn-outline-danger">Hủy lịch khám</button>
+        </form>
+    }
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</div>

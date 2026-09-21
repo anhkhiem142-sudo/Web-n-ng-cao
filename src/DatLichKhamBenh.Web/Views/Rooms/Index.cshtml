@@ -1,0 +1,46 @@
+@model IEnumerable<DatLichKhamBenh.Web.Models.Room>
+@{
+    ViewData["Title"] = "Quản lý phòng khám";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Quản lý phòng khám</h1>
+    <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Thêm phòng khám</a>
+</div>
+
+@if (TempData["Success"] is not null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] is not null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="table-wrap">
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Tên phòng khám</th>
+            <th>Vị trí</th>
+            <th>Số bác sĩ</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var room in Model)
+        {
+            <tr>
+                <td>@room.Name</td>
+                <td>@room.Location</td>
+                <td>@room.Doctors.Count</td>
+                <td class="text-end">
+                    <a asp-action="Details" asp-route-id="@room.Id" class="btn btn-sm btn-outline-secondary">Chi tiết</a>
+                    <a asp-action="Edit" asp-route-id="@room.Id" class="btn btn-sm btn-outline-primary">Sửa</a>
+                    <a asp-action="Delete" asp-route-id="@room.Id" class="btn btn-sm btn-outline-danger">Xóa</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+</div>

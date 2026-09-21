@@ -1,0 +1,17 @@
+@model DatLichKhamBenh.Web.Models.Doctor
+@{
+    ViewData["Title"] = Model.FullName;
+}
+
+<h1>@Model.FullName</h1>
+<dl class="row">
+    <dt class="col-sm-2">Chuyên khoa</dt>
+    <dd class="col-sm-10">@Model.Specialty</dd>
+    <dt class="col-sm-2">Phòng khám</dt>
+    <dd class="col-sm-10">@Model.Room?.Name (@Model.Room?.Location)</dd>
+    <dt class="col-sm-2">Giới thiệu</dt>
+    <dd class="col-sm-10">@Model.Bio</dd>
+</dl>
+
+<a asp-controller="Appointments" asp-action="Create" asp-route-doctorId="@Model.Id" class="btn btn-primary">Đặt lịch khám</a>
+<a asp-action="Index" class="btn btn-secondary">Quay lại</a>

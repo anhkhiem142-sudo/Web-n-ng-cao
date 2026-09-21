@@ -1,0 +1,32 @@
+@model IEnumerable<DatLichKhamBenh.Web.Models.Doctor>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">Không tìm thấy bác sĩ phù hợp.</p>
+}
+else
+{
+    @foreach (var doctor in Model)
+    {
+        var initials = string.Join("", doctor.FullName.Split(' ').Where(w => w.Length > 0).Select(w => w[0])).ToUpperInvariant();
+        if (initials.Length > 2) { initials = initials[^2..]; }
+        <div class="col-md-4">
+            <div class="card h-100 card-hover">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="doctor-avatar">@initials</div>
+                        <div>
+                            <h5 class="card-title mb-1">@doctor.FullName</h5>
+                            <span class="badge text-bg-primary">@doctor.Specialty</span>
+                        </div>
+                    </div>
+                    <p class="card-text text-muted"><i class="bi bi-geo-alt me-1"></i>@doctor.Room?.Name</p>
+                    <div class="d-flex gap-2">
+                        <a asp-controller="Doctors" asp-action="Details" asp-route-id="@doctor.Id" class="btn btn-outline-primary btn-sm">Xem chi tiết</a>
+                        <a asp-controller="Appointments" asp-action="Create" asp-route-doctorId="@doctor.Id" class="btn btn-primary btn-sm"><i class="bi bi-calendar-plus me-1"></i>Đặt lịch</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}

@@ -1,0 +1,52 @@
+@model IEnumerable<DatLichKhamBenh.Web.Models.Doctor>
+@{
+    ViewData["Title"] = "Quản lý bác sĩ";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Quản lý bác sĩ</h1>
+    <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Thêm bác sĩ</a>
+</div>
+
+@if (TempData["Success"] is not null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] is not null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="table-wrap">
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Họ tên</th>
+            <th>Chuyên khoa</th>
+            <th>Phòng khám</th>
+            <th>Email</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var doctor in Model)
+        {
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="doctor-avatar" style="width:36px;height:36px;font-size:.8rem;">@(string.Join("", doctor.FullName.Split(' ').Where(w => w.Length > 0).Select(w => w[0])).ToUpperInvariant())</div>
+                        @doctor.FullName
+                    </div>
+                </td>
+                <td><span class="badge text-bg-primary">@doctor.Specialty</span></td>
+                <td>@doctor.Room?.Name</td>
+                <td>@doctor.Email</td>
+                <td class="text-end">
+                    <a asp-action="Edit" asp-route-id="@doctor.Id" class="btn btn-sm btn-outline-primary">Sửa</a>
+                    <a asp-action="Delete" asp-route-id="@doctor.Id" class="btn btn-sm btn-outline-danger">Xóa</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+</div>

@@ -1,0 +1,23 @@
+@model DatLichKhamBenh.Web.Models.Room
+@{
+    ViewData["Title"] = "Chi tiết phòng khám";
+}
+
+<h1>@Model.Name</h1>
+<dl class="row">
+    <dt class="col-sm-2">Vị trí</dt>
+    <dd class="col-sm-10">@Model.Location</dd>
+    <dt class="col-sm-2">Mô tả</dt>
+    <dd class="col-sm-10">@Model.Description</dd>
+</dl>
+
+<h4>Bác sĩ thuộc phòng khám</h4>
+<ul class="list-group mb-3">
+    @foreach (var doctor in Model.Doctors)
+    {
+        <li class="list-group-item">@doctor.FullName - @doctor.Specialty</li>
+    }
+</ul>
+
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Sửa</a>
+<a asp-action="Index" class="btn btn-secondary">Quay lại</a>

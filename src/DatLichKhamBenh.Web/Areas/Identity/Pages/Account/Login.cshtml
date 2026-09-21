@@ -1,0 +1,39 @@
+@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<div class="auth-wrap">
+    <div class="text-center mb-4">
+        <i class="bi bi-heart-pulse" style="font-size:2.2rem; color: var(--primary);"></i>
+        <h1 class="h3 mt-2 mb-0">Đăng nhập</h1>
+        <p class="text-muted">Truy cập hệ thống đặt lịch khám bệnh</p>
+    </div>
+    <form id="account" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+        <div class="form-floating mb-3">
+            <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+            <label asp-for="Input.Email" class="form-label">Email</label>
+            <span asp-validation-for="Input.Email" class="text-danger"></span>
+        </div>
+        <div class="form-floating mb-3">
+            <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
+            <label asp-for="Input.Password" class="form-label">Mật khẩu</label>
+            <span asp-validation-for="Input.Password" class="text-danger"></span>
+        </div>
+        <div class="mb-3 form-check">
+            <input class="form-check-input" asp-for="Input.RememberMe" />
+            <label asp-for="Input.RememberMe" class="form-check-label">@Html.DisplayNameFor(m => m.Input.RememberMe)</label>
+        </div>
+        <button id="login-submit" type="submit" class="w-100 btn btn-lg btn-primary mb-3">Đăng nhập</button>
+        <p class="text-center mb-0 text-muted">
+            Chưa có tài khoản? <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Đăng ký ngay</a>
+        </p>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
