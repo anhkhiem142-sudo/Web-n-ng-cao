@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using DatLichKhamBenh.Web.Data;
 using DatLichKhamBenh.Web.Models;
+using DatLichKhamBenh.Web.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -107,12 +108,25 @@ public class PatientsController(ApplicationDbContext context) : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // Self-service profile for the logged-in patient.
+    // Self-service: lists every patient profile the logged-in account manages
+    // (their own profile created at registration, plus any relatives they added).
     [Authorize(Roles = Roles.Patient)]
     public async Task<IActionResult> Profile()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var patient = await context.Patients.FirstOrDefaultAsync(p => p.ApplicationUserId == userId);
+        var profiles = await context.Patients
+            .Where(p => p.ApplicationUserId == userId)
+            .OrderByDescending(p => p.Relationship == PatientRelationships.Self)
+            .ThenBy(p => p.FullName)
+            .ToListAsync();
+        return View(profiles);
+    }
+
+    [Authorize(Roles = Roles.Patient)]
+    public async Task<IActionResult> EditProfile(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var patient = await context.Patients.FirstOrDefaultAsync(p => p.Id == id && p.ApplicationUserId == userId);
         if (patient is null) return NotFound();
         return View(patient);
     }
@@ -120,10 +134,10 @@ public class PatientsController(ApplicationDbContext context) : Controller
     [Authorize(Roles = Roles.Patient)]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Profile(Patient patient)
+    public async Task<IActionResult> EditProfile(int id, Patient patient)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var existing = await context.Patients.FirstOrDefaultAsync(p => p.ApplicationUserId == userId);
+        var existing = await context.Patients.FirstOrDefaultAsync(p => p.Id == id && p.ApplicationUserId == userId);
         if (existing is null) return NotFound();
 
         if (!ModelState.IsValid) return View(patient);
@@ -135,7 +149,72 @@ public class PatientsController(ApplicationDbContext context) : Controller
         existing.Address = patient.Address;
 
         await context.SaveChangesAsync();
-        TempData["Success"] = "Đã cập nhật hồ sơ của bạn.";
+        TempData["Success"] = "Đã cập nhật hồ sơ.";
         return RedirectToAction(nameof(Profile));
+    }
+
+    [Authorize(Roles = Roles.Patient)]
+    public IActionResult AddRelative()
+    {
+        ViewBag.RelationshipOptions = PatientRelationships.RelativeOptions;
+        return View(new RelativeFormViewModel());
+    }
+
+    [Authorize(Roles = Roles.Patient)]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddRelative(RelativeFormViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            ViewBag.RelationshipOptions = PatientRelationships.RelativeOptions;
+            return View(model);
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        context.Patients.Add(new Patient
+        {
+            ApplicationUserId = userId,
+            FullName = model.FullName,
+            DateOfBirth = model.DateOfBirth,
+            Gender = model.Gender,
+            Phone = model.Phone,
+            Address = model.Address,
+            Relationship = model.Relationship
+        });
+        await context.SaveChangesAsync();
+        TempData["Success"] = "Đã thêm hồ sơ người thân.";
+        return RedirectToAction(nameof(Profile));
+    }
+
+    // Fetch endpoint used by the booking form's "+ Thêm người thân" modal so a relative
+    // can be added and selected without leaving the appointment booking page.
+    [Authorize(Roles = Roles.Patient)]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddRelativeAjax([FromForm] RelativeFormViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Where(kv => kv.Value?.Errors.Count > 0)
+                .ToDictionary(kv => kv.Key, kv => kv.Value!.Errors.Select(e => e.ErrorMessage).ToArray());
+            return BadRequest(new { errors });
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var patient = new Patient
+        {
+            ApplicationUserId = userId,
+            FullName = model.FullName,
+            DateOfBirth = model.DateOfBirth,
+            Gender = model.Gender,
+            Phone = model.Phone,
+            Address = model.Address,
+            Relationship = model.Relationship
+        };
+        context.Patients.Add(patient);
+        await context.SaveChangesAsync();
+
+        return Json(new { id = patient.Id, label = $"{patient.FullName} ({patient.Relationship})" });
     }
 }

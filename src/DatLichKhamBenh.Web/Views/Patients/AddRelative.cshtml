@@ -1,14 +1,26 @@
-@model DatLichKhamBenh.Web.Models.Patient
+@model DatLichKhamBenh.Web.Models.ViewModels.RelativeFormViewModel
 @{
-    ViewData["Title"] = "Sửa thông tin bệnh nhân";
+    ViewData["Title"] = "Thêm người thân";
+    var relationships = ViewBag.RelationshipOptions as string[] ?? Array.Empty<string>();
 }
 
-<h1 class="mb-4"><i class="bi bi-pencil-square me-2 text-primary"></i>Sửa thông tin bệnh nhân</h1>
+<h1 class="mb-4"><i class="bi bi-person-plus me-2 text-primary"></i>Thêm hồ sơ người thân</h1>
+<p class="text-muted mb-4">Dùng hồ sơ này để đặt lịch khám thay cho người thân của bạn.</p>
 
 <div class="card col-md-6"><div class="card-body">
-<form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+<form asp-action="AddRelative" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    <input type="hidden" asp-for="Id" />
+    <div class="mb-3">
+        <label asp-for="Relationship" class="form-label"></label>
+        <select asp-for="Relationship" class="form-select">
+            <option value="">-- Chọn quan hệ --</option>
+            @foreach (var r in relationships)
+            {
+                <option value="@r">@r</option>
+            }
+        </select>
+        <span asp-validation-for="Relationship" class="text-danger"></span>
+    </div>
     <div class="mb-3">
         <label asp-for="FullName" class="form-label"></label>
         <input asp-for="FullName" class="form-control" />
@@ -32,7 +44,7 @@
         <input asp-for="Address" class="form-control" />
     </div>
     <button type="submit" class="btn btn-primary">Lưu</button>
-    <a asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+    <a asp-action="Profile" class="btn btn-outline-secondary">Hủy</a>
 </form>
 </div></div>
 

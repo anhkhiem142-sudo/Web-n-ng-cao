@@ -1,45 +1,48 @@
-@model DatLichKhamBenh.Web.Models.Patient
+@model IEnumerable<DatLichKhamBenh.Web.Models.Patient>
 @{
     ViewData["Title"] = "Hồ sơ của tôi";
 }
 
-<h1 class="mb-4"><i class="bi bi-person-circle me-2 text-primary"></i>Hồ sơ của tôi</h1>
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+        <h1 class="mb-1"><i class="bi bi-person-circle me-2 text-primary"></i>Hồ sơ của tôi</h1>
+        <p class="text-muted mb-0">Quản lý hồ sơ của bạn và người thân dùng để đặt lịch khám</p>
+    </div>
+    <a asp-action="AddRelative" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i>Thêm người thân</a>
+</div>
 
 @if (TempData["Success"] is not null)
 {
     <div class="alert alert-success">@TempData["Success"]</div>
 }
 
-<div class="card col-md-6"><div class="card-body">
-<form asp-action="Profile" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    <input type="hidden" asp-for="Id" />
-    <div class="mb-3">
-        <label asp-for="FullName" class="form-label"></label>
-        <input asp-for="FullName" class="form-control" />
-        <span asp-validation-for="FullName" class="text-danger"></span>
-    </div>
-    <div class="mb-3">
-        <label asp-for="DateOfBirth" class="form-label"></label>
-        <input asp-for="DateOfBirth" class="form-control" value="@Model.DateOfBirth.ToString("yyyy-MM-dd")" type="date" />
-        <span asp-validation-for="DateOfBirth" class="text-danger"></span>
-    </div>
-    <div class="mb-3">
-        <label asp-for="Gender" class="form-label"></label>
-        <select asp-for="Gender" class="form-select" asp-items="Html.GetEnumSelectList<DatLichKhamBenh.Web.Models.Gender>()"></select>
-    </div>
-    <div class="mb-3">
-        <label asp-for="Phone" class="form-label"></label>
-        <input asp-for="Phone" class="form-control" />
-    </div>
-    <div class="mb-3">
-        <label asp-for="Address" class="form-label"></label>
-        <input asp-for="Address" class="form-control" />
-    </div>
-    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
-</form>
-</div></div>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
+<div class="row g-3">
+    @foreach (var profile in Model)
+    {
+        var isSelf = profile.Relationship == DatLichKhamBenh.Web.Models.PatientRelationships.Self;
+        var initials = string.Join("", profile.FullName.Split(' ').Where(w => w.Length > 0).Select(w => w[0])).ToUpperInvariant();
+        if (initials.Length > 2) { initials = initials[^2..]; }
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="doctor-avatar">@initials</div>
+                        <div>
+                            <h5 class="mb-1">@profile.FullName</h5>
+                            <span class="badge @(isSelf ? "text-bg-primary" : "text-bg-secondary")">@(profile.Relationship ?? "Người thân")</span>
+                        </div>
+                    </div>
+                    <dl class="row mb-2 small">
+                        <dt class="col-sm-4">Ngày sinh</dt>
+                        <dd class="col-sm-8">@profile.DateOfBirth.ToString("dd/MM/yyyy")</dd>
+                        <dt class="col-sm-4">Giới tính</dt>
+                        <dd class="col-sm-8">@profile.Gender</dd>
+                        <dt class="col-sm-4">Điện thoại</dt>
+                        <dd class="col-sm-8">@profile.Phone</dd>
+                    </dl>
+                    <a asp-action="EditProfile" asp-route-id="@profile.Id" class="btn btn-sm btn-outline-primary">Sửa thông tin</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

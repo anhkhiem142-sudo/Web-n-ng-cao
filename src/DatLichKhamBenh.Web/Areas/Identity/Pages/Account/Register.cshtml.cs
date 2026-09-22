@@ -161,7 +161,8 @@ namespace DatLichKhamBenh.Web.Areas.Identity.Pages.Account
                         DateOfBirth = Input.DateOfBirth,
                         Gender = Input.Gender,
                         Phone = Input.Phone,
-                        Address = Input.Address
+                        Address = Input.Address,
+                        Relationship = Models.PatientRelationships.Self
                     });
                     await _context.SaveChangesAsync();
 

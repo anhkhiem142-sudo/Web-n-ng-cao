@@ -23,3 +23,10 @@ public static class Roles
 
     public static readonly string[] All = { Admin, Doctor, Patient };
 }
+
+public static class PatientRelationships
+{
+    public const string Self = "Bản thân";
+
+    public static readonly string[] RelativeOptions = { "Con", "Vợ/Chồng", "Bố/Mẹ", "Anh/Chị/Em", "Khác" };
+}

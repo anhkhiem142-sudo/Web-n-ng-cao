@@ -37,6 +37,9 @@ public class Appointment
     [Display(Name = "Lý do khám")]
     public string? Reason { get; set; }
 
+    [Display(Name = "Sử dụng bảo hiểm y tế")]
+    public bool HasInsurance { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public MedicalInfo? MedicalInfo { get; set; }

@@ -27,32 +27,46 @@
     </div>
 </div>
 
+@{
+    var isAuth = User.Identity?.IsAuthenticated == true;
+    var isPatient = User.IsInRole("Patient");
+
+    string BookUrl() => isPatient ? Url.Action("Create", "Appointments")! : isAuth ? Url.Action("Index", "Appointments")! : Url.Page("/Account/Register", new { area = "Identity" })!;
+    string HistoryUrl() => isAuth ? Url.Action("Index", "Appointments")! : Url.Page("/Account/Login", new { area = "Identity" })!;
+}
+
 <div class="row g-4 mb-4">
     <div class="col-md-4">
-        <div class="card h-100 card-hover">
-            <div class="card-body">
-                <div class="feature-icon"><i class="bi bi-calendar2-check"></i></div>
-                <h4>Đặt lịch trực tuyến</h4>
-                <p class="text-muted mb-0">Chọn bác sĩ, chọn giờ khám trống theo thời gian thực và đặt lịch chỉ trong vài bước.</p>
+        <a href="@BookUrl()" class="text-decoration-none text-reset d-block h-100">
+            <div class="card h-100 card-hover">
+                <div class="card-body">
+                    <div class="feature-icon"><i class="bi bi-calendar2-check"></i></div>
+                    <h4>Đặt lịch trực tuyến</h4>
+                    <p class="text-muted mb-0">Chọn bác sĩ, chọn giờ khám trống theo thời gian thực và đặt lịch chỉ trong vài bước.</p>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-md-4">
-        <div class="card h-100 card-hover">
-            <div class="card-body">
-                <div class="feature-icon"><i class="bi bi-clipboard2-pulse"></i></div>
-                <h4>Gửi thông tin bệnh</h4>
-                <p class="text-muted mb-0">Mô tả triệu chứng gửi trước cho bác sĩ để buổi khám hiệu quả hơn.</p>
+        <a href="@HistoryUrl()" class="text-decoration-none text-reset d-block h-100">
+            <div class="card h-100 card-hover">
+                <div class="card-body">
+                    <div class="feature-icon"><i class="bi bi-clipboard2-pulse"></i></div>
+                    <h4>Gửi thông tin bệnh</h4>
+                    <p class="text-muted mb-0">Mô tả triệu chứng gửi trước cho bác sĩ để buổi khám hiệu quả hơn. Chọn một lịch khám để gửi.</p>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-md-4">
-        <div class="card h-100 card-hover">
-            <div class="card-body">
-                <div class="feature-icon"><i class="bi bi-journal-medical"></i></div>
-                <h4>Theo dõi lịch sử khám</h4>
-                <p class="text-muted mb-0">Xem lại toàn bộ lịch sử khám bệnh và chẩn đoán của bạn bất cứ lúc nào.</p>
+        <a href="@HistoryUrl()" class="text-decoration-none text-reset d-block h-100">
+            <div class="card h-100 card-hover">
+                <div class="card-body">
+                    <div class="feature-icon"><i class="bi bi-journal-medical"></i></div>
+                    <h4>Theo dõi lịch sử khám</h4>
+                    <p class="text-muted mb-0">Xem lại toàn bộ lịch sử khám bệnh và chẩn đoán của bạn bất cứ lúc nào.</p>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
 </div>

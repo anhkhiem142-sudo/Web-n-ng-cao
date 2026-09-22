@@ -4,6 +4,10 @@ namespace DatLichKhamBenh.Web.Models.ViewModels;
 
 public class BookAppointmentViewModel
 {
+    [Required(ErrorMessage = "Vui lòng chọn người tới khám")]
+    [Display(Name = "Người tới khám")]
+    public int PatientId { get; set; }
+
     [Required(ErrorMessage = "Vui lòng chọn bác sĩ")]
     [Display(Name = "Bác sĩ")]
     public int DoctorId { get; set; }
@@ -21,4 +25,8 @@ public class BookAppointmentViewModel
     [StringLength(1000)]
     [Display(Name = "Lý do khám / triệu chứng")]
     public string Reason { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Vui lòng chọn có sử dụng bảo hiểm y tế hay không")]
+    [Display(Name = "Sử dụng bảo hiểm y tế")]
+    public bool? HasInsurance { get; set; }
 }

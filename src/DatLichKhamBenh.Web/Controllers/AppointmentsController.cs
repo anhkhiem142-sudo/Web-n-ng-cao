@@ -53,10 +53,17 @@ public class AppointmentsController(ApplicationDbContext context) : Controller
     }
 
     [Authorize(Roles = Roles.Patient)]
-    public async Task<IActionResult> Create(int? doctorId)
+    public async Task<IActionResult> Create(int? doctorId, int? patientId)
     {
-        ViewBag.Doctors = new SelectList(await context.Doctors.Include(d => d.Room).OrderBy(d => d.FullName).ToListAsync(), "Id", "FullName", doctorId);
-        return View(new BookAppointmentViewModel { DoctorId = doctorId ?? 0 });
+        if (!patientId.HasValue)
+        {
+            var selfProfile = await context.Patients.FirstOrDefaultAsync(p =>
+                p.ApplicationUserId == CurrentUserId && p.Relationship == PatientRelationships.Self);
+            patientId = selfProfile?.Id;
+        }
+
+        await PopulateBookingViewBagsAsync(doctorId, patientId);
+        return View(new BookAppointmentViewModel { DoctorId = doctorId ?? 0, PatientId = patientId ?? 0 });
     }
 
     [Authorize(Roles = Roles.Patient)]
@@ -64,8 +71,14 @@ public class AppointmentsController(ApplicationDbContext context) : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(BookAppointmentViewModel model)
     {
-        var patient = await context.Patients.FirstOrDefaultAsync(p => p.ApplicationUserId == CurrentUserId);
-        if (patient is null) return Forbid();
+        var ownedPatientIds = await context.Patients
+            .Where(p => p.ApplicationUserId == CurrentUserId)
+            .Select(p => p.Id)
+            .ToListAsync();
+        if (!ownedPatientIds.Contains(model.PatientId))
+        {
+            ModelState.AddModelError(nameof(model.PatientId), "Người tới khám không hợp lệ.");
+        }
 
         var doctor = await context.Doctors.FindAsync(model.DoctorId);
         if (doctor is null)
@@ -83,7 +96,7 @@ public class AppointmentsController(ApplicationDbContext context) : Controller
 
         if (!ModelState.IsValid)
         {
-            ViewBag.Doctors = new SelectList(await context.Doctors.OrderBy(d => d.FullName).ToListAsync(), "Id", "FullName", model.DoctorId);
+            await PopulateBookingViewBagsAsync(model.DoctorId, model.PatientId);
             return View(model);
         }
 
@@ -95,18 +108,19 @@ public class AppointmentsController(ApplicationDbContext context) : Controller
         if (conflict)
         {
             ModelState.AddModelError(string.Empty, "Khung giờ này vừa có người đặt, vui lòng chọn giờ khác.");
-            ViewBag.Doctors = new SelectList(await context.Doctors.OrderBy(d => d.FullName).ToListAsync(), "Id", "FullName", model.DoctorId);
+            await PopulateBookingViewBagsAsync(model.DoctorId, model.PatientId);
             return View(model);
         }
 
         var appointment = new Appointment
         {
-            PatientId = patient.Id,
+            PatientId = model.PatientId,
             DoctorId = model.DoctorId,
             RoomId = doctor!.RoomId,
             AppointmentDate = model.AppointmentDate.Date,
             TimeSlot = model.TimeSlot,
             Reason = model.Reason,
+            HasInsurance = model.HasInsurance == true,
             Status = AppointmentStatus.Pending
         };
 
@@ -118,12 +132,30 @@ public class AppointmentsController(ApplicationDbContext context) : Controller
         catch (DbUpdateException)
         {
             ModelState.AddModelError(string.Empty, "Khung giờ này vừa có người đặt, vui lòng chọn giờ khác.");
-            ViewBag.Doctors = new SelectList(await context.Doctors.OrderBy(d => d.FullName).ToListAsync(), "Id", "FullName", model.DoctorId);
+            await PopulateBookingViewBagsAsync(model.DoctorId, model.PatientId);
             return View(model);
         }
 
         TempData["Success"] = "Đặt lịch khám thành công! Vui lòng chờ xác nhận từ phòng khám.";
         return RedirectToAction(nameof(Details), new { id = appointment.Id });
+    }
+
+    private async Task PopulateBookingViewBagsAsync(int? selectedDoctorId, int? selectedPatientId)
+    {
+        var doctors = await context.Doctors.Include(d => d.Room).OrderBy(d => d.FullName).ToListAsync();
+        ViewBag.Doctors = new SelectList(doctors, "Id", "FullName", selectedDoctorId);
+        ViewBag.DoctorsData = doctors.Select(d => new { id = d.Id, fullName = d.FullName, specialty = d.Specialty, room = d.Room?.Name });
+        ViewBag.Specialties = doctors.Select(d => d.Specialty).Distinct().OrderBy(s => s).ToList();
+
+        var profiles = await context.Patients
+            .Where(p => p.ApplicationUserId == CurrentUserId)
+            .OrderByDescending(p => p.Relationship == PatientRelationships.Self)
+            .ThenBy(p => p.FullName)
+            .ToListAsync();
+        ViewBag.PatientProfiles = new SelectList(
+            profiles.Select(p => new { p.Id, Label = $"{p.FullName} ({p.Relationship ?? "Người thân"})" }),
+            "Id", "Label", selectedPatientId);
+        ViewBag.RelationshipOptions = PatientRelationships.RelativeOptions;
     }
 
     // Fetch endpoint used by the booking form: returns which slots are still free for a doctor+date.

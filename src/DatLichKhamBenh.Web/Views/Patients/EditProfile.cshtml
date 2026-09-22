@@ -1,12 +1,13 @@
 @model DatLichKhamBenh.Web.Models.Patient
 @{
-    ViewData["Title"] = "Sửa thông tin bệnh nhân";
+    ViewData["Title"] = "Sửa hồ sơ";
+    var isSelf = Model.Relationship == DatLichKhamBenh.Web.Models.PatientRelationships.Self;
 }
 
-<h1 class="mb-4"><i class="bi bi-pencil-square me-2 text-primary"></i>Sửa thông tin bệnh nhân</h1>
+<h1 class="mb-4"><i class="bi bi-pencil-square me-2 text-primary"></i>Sửa hồ sơ @(isSelf ? "của tôi" : $"người thân ({Model.Relationship})")</h1>
 
 <div class="card col-md-6"><div class="card-body">
-<form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+<form asp-action="EditProfile" asp-route-id="@Model.Id" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <input type="hidden" asp-for="Id" />
     <div class="mb-3">
@@ -32,7 +33,7 @@
         <input asp-for="Address" class="form-control" />
     </div>
     <button type="submit" class="btn btn-primary">Lưu</button>
-    <a asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+    <a asp-action="Profile" class="btn btn-outline-secondary">Hủy</a>
 </form>
 </div></div>
 

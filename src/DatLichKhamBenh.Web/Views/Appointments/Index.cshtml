@@ -40,7 +40,7 @@
         </div>
     }
     <div class="col-auto">
-        <input type="date" name="date" class="form-control" value="@(ViewBag.Date as DateTime?)?.ToString("yyyy-MM-dd")" onchange="this.form.submit()" />
+        <input type="text" name="date" class="form-control flatpickr-date" autocomplete="off" value="@(ViewBag.Date as DateTime?)?.ToString("yyyy-MM-dd")" onchange="this.form.submit()" />
     </div>
 </form>
 

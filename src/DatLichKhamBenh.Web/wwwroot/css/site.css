@@ -267,6 +267,28 @@ label.form-label, .form-floating > label {
   padding: 1.25rem;
 }
 
+/* ===== Doctor booking list (Appointments/Create) ===== */
+.doctor-list-scroll {
+  max-height: 560px;
+  overflow-y: auto;
+  padding-right: .25rem;
+}
+
+.doctor-list-card {
+  box-shadow: none;
+  border-color: var(--border);
+  transition: border-color .15s ease, background-color .15s ease;
+}
+
+.doctor-list-card:hover {
+  border-color: var(--primary);
+}
+
+.doctor-list-card.selected {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
 /* ===== Doctor cards ===== */
 .doctor-avatar {
   width: 56px;
@@ -283,9 +305,25 @@ label.form-label, .form-floating > label {
 }
 
 /* ===== Appointment time slots ===== */
+.slot-group-label {
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: .6rem;
+}
+
+.slot-group-label .bi-sun-fill {
+  color: #f59e0b;
+}
+
+.slot-group-label .bi-cloud-sun-fill {
+  color: #0ea5e9;
+}
+
 #slotContainer .btn {
-  min-width: 74px;
-  border-radius: 999px;
+  min-width: 84px;
+  border-radius: var(--radius-sm);
+  padding-block: .5rem;
+  font-weight: 600;
 }
 
 #slotContainer .btn.active {

@@ -30,5 +30,14 @@ public class Patient
     [Display(Name = "Địa chỉ")]
     public string? Address { get; set; }
 
+    /// <summary>
+    /// Quan hệ với chủ tài khoản đã tạo hồ sơ này: "Bản thân" cho hồ sơ tự động tạo khi đăng ký,
+    /// hoặc "Con", "Vợ/Chồng", "Bố/Mẹ", "Khác" cho hồ sơ người thân được thêm sau.
+    /// Null đối với bệnh nhân do Admin tạo trực tiếp (không gắn tài khoản đăng nhập).
+    /// </summary>
+    [StringLength(50)]
+    [Display(Name = "Quan hệ với tài khoản")]
+    public string? Relationship { get; set; }
+
     public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 }

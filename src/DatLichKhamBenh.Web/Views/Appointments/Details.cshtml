@@ -25,6 +25,8 @@
     <dd class="col-sm-9">@Model.AppointmentDate.ToString("dd/MM/yyyy") lúc @Model.TimeSlot</dd>
     <dt class="col-sm-3">Lý do khám</dt>
     <dd class="col-sm-9">@Model.Reason</dd>
+    <dt class="col-sm-3">Bảo hiểm y tế</dt>
+    <dd class="col-sm-9">@(Model.HasInsurance ? "Có" : "Không")</dd>
     <dt class="col-sm-3">Trạng thái</dt>
     <dd class="col-sm-9">@Model.Status</dd>
 </dl>
